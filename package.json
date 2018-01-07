@@ -1,0 +1,11 @@
+{
+  "name": "VegSort package",
+  "version": "0.0.1",
+  "description": "my first socket.io app",
+  "dependencies": {
+    "express": "^4.15.2",
+    "mongodb": "^2.2.33",
+    "mongoose": "^4.13.5",
+    "socket.io": "^2.0.4"
+  }
+}

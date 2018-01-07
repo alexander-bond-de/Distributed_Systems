@@ -1,0 +1,56 @@
+body {
+    font-family:Arial;
+}
+
+header, footer {
+	background-color: #804A15;
+	color: white;
+
+	font-weight: bold;
+    padding: 1em;
+    clear: left;
+    text-align: center;
+}
+
+#vegDisplayPane{
+	display: inline-block;
+}
+
+.vegInputPane {
+	background-color: #AA7139;
+	color: white;
+	float: left;
+    max-width: 180px;
+    border-radius: 0px 0px 50px;
+}
+
+th {
+	background-color: #FFD4AA;
+	color: black;
+	width:20%;
+}
+
+td {
+	background-color: #D3CDC6;
+	color: black;
+}
+
+tr:nth-child(odd){
+  	background-color: #AA7139;
+  	color: black;
+}
+
+
+.vegSearchPane{
+	background-color: #AA7139;
+	color: white;
+	float: right;
+	width: 180px;
+	height: 210px;
+    border-radius: 0px 0px 0px 50px;
+}
+
+.vegSubmitTitle {
+	text-align: center;
+}
+
