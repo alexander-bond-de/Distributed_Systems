@@ -1,9 +1,8 @@
 body {
-    font-family:Arial;
+    background-color: #21272c;
 }
 
 header, footer {
-	background-color: #804A15;
 	color: white;
 
 	font-weight: bold;
@@ -12,45 +11,79 @@ header, footer {
     text-align: center;
 }
 
-#vegDisplayPane{
-	display: inline-block;
+.topMenuBar {
+	background-color: #009900;
+	height: 80px;
+	margin-bottom: 20px;
 }
 
-.vegInputPane {
-	background-color: #AA7139;
+#tbx_search {
+	color: black;
+}
+
+#title {
 	color: white;
+	font-size: 36px;
+	font-weight: 500;
+	padding: 10px;
 	float: left;
-    max-width: 180px;
-    border-radius: 0px 0px 50px;
 }
 
-th {
-	background-color: #FFD4AA;
-	color: black;
-	width:20%;
-}
-
-td {
-	background-color: #D3CDC6;
-	color: black;
-}
-
-tr:nth-child(odd){
-  	background-color: #AA7139;
-  	color: black;
-}
-
-
-.vegSearchPane{
-	background-color: #AA7139;
-	color: white;
+#login{
+	padding: 23px;
+	display: none;
 	float: right;
-	width: 180px;
-	height: 210px;
-    border-radius: 0px 0px 0px 50px;
 }
 
-.vegSubmitTitle {
-	text-align: center;
+#loggedin {
+	display: none;
+}
+
+.container {
+	background-color: #006699;
+	color: white;
+    margin-right: 15px;
+    margin-left: 15px;
+    float: left;
+    width: 76%;
+}
+
+.twitterFeed {
+	background-color: #d3d9de;
+	margin-right: 15px;
+    float: right;
+    width: 20%;
+    height: 100%;
+}
+
+.song_table {
+    background-color: #d3d9de;
+    margin-top: 15px;
+    margin-left: 15px;
+    float: left;
+    width: 76%;
+}
+
+#song_list { 
+    list-style-type: none; 
+    margin: 0; 
+    padding: 0; 
+}
+
+#song_list li {
+    padding: 40px; 
+}
+
+.song_album_art { height: 60px; width: 60px; float: left;}
+.song_group		{ width: auto; float: left; margin-left: 15px;}
+.song_name		{ color: #000000; float: left; width: inherit;}
+.song_album 	{ color: #424e57; width: auto; clear:both;}
+
+      
+.text-overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 500px;
 }
 

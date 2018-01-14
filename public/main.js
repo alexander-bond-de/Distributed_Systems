@@ -1,110 +1,94 @@
-// socket.io functionality
-
-// declares vegetable object
-
-/*
-function Vegetable(name, type, duration, plantDate, bio)
-{
-	this.name = name;
-	this.type = type;
-	this.duration = duration;
-	this.plantDate = plantDate;
-	this.bio = bio;
-}
+/**
+* Obtains parameters from the hash of the URL
+* @return Object
 */
+function mainScript() {
+	function getHashParams() {
+		var hashParams = {};
+		var e, 
+			r = /([^&;=]+)=?([^&;]*)/g,
+			q = window.location.hash.substring(1);
+		while ( e = r.exec(q)) { hashParams[e[1]] = decodeURIComponent(e[2]); }
+		return hashParams;
+	};
 
-/*
-// announces user to server
-function announceUser()
-{
-	socket.emit('user connected');
-}
-*/
+	var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+		userProfileTemplate = Handlebars.compile(userProfileSource),
+		userProfilePlaceholder = document.getElementById('user-profile');
+	var oauthSource = document.getElementById('oauth-template').innerHTML,
+		oauthTemplate = Handlebars.compile(oauthSource),
+		oauthPlaceholder = document.getElementById('oauth');
+	var params = getHashParams();
+	var access_token = params.access_token,
+		refresh_token = params.refresh_token,
+		error = params.error;
 
-/*
-// socket.io handelling
-$(function () 
-{
-	// send vegetable information to server
-	$('#vegSubmit').submit(function(e){
-		e.preventDefault();
-		console.log("sending vegetable...");
+	if (error) alert('There was an error during the authentication');
+	else {
+		if (access_token) {
 
-		var date = new Date($('#plantDate').val());
-		var vegetable = new Vegetable(
-			$('#name').val(),
-			$('#type').val(),
-			$('#duration').val(),
-			date.toLocaleDateString(),
-			$('#bioProduct').is(':checked'),
-		);
-		//socket.emit('new vegetable', vegetable);
-		
-		$.ajax({
-			type: "POST",
-			url: 'http://localhost:3000/api/vegetable',
-			success: function(veg){
-				//console.log("vegetable sent "+date.toLocaleDateString());
-				console.log("received vegetable "+veg);
+			// render oauth info
+			oauthPlaceholder.innerHTML = oauthTemplate({
+				access_token: access_token,
+				refresh_token: refresh_token
+			});
 
-				var table = document.getElementById("vegDisplayTable");
-				var row = table.insertRow(-1);
-				row.id = ("vegRow"+(table.rows.length - 1));
+			$.ajax({
+				url: 'https://api.spotify.com/v1/me',
+				headers: {
+					'Authorization': 'Bearer ' + access_token
+				},
+				success: function(response) {
+				userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+				$('#login').hide();
+				$('#loggedin').show();
+				}
+			});
+		} else {
+			// render initial screen
+			$('#login').show();
+			$('#loggedin').hide();
+		}
+		document.getElementById('obtain-new-token').addEventListener('click', function() {
+			$.ajax({
+				url: '/refresh_token',
+				data: {
+					'refresh_token': refresh_token
+				}
+			}).done(function(data) {
+				access_token = data.access_token;
+				oauthPlaceholder.innerHTML = oauthTemplate({
+					access_token: access_token,
+					refresh_token: refresh_token
+				});
+			});
+		}, false);
+	}
+};
 
-				var cell1 = row.insertCell(0);
-				var cell2 = row.insertCell(1);
-				var cell3 = row.insertCell(2);
-				var cell4 = row.insertCell(3);
-				var cell5 = row.insertCell(4);
+function findSong(){
 
-				cell1.innerHTML = veg.name;
-				cell2.innerHTML = veg.type;
-				cell3.innerHTML = veg.duration;
-				cell4.innerHTML = veg.plantDate;
-				cell5.innerHTML = veg.bio;
-			},
-			dataType: 'JSON',
-			data: vegetable
-		});
-	});
+	var search = $('#tbx_search').val();
+	console.log(search);
 
-	// add the new vegetable to the list of vegetables
-	socket.on('add vegetable', function(veg){
-
-	});
-
-	// search for vegetable 
-	$('#vegSearch').submit(function(e){
-		console.log("searching vegetable...");
-		e.preventDefault();
-		//socket.emit('search vegetable', $('#vegToSearch').val());
-		var search = $('#vegToSearch').val();
-		console.log(search);
-
-		$.ajax({
+	$.ajax({
 			type: "GET",
-			url: 'http://localhost:3000/api/vegetable',
+			url: 'http://localhost:3000/find_song',
 			data: {srch: search},
 			dataType: 'json',
 			success: function(found){
-				// return seach function
-				if (found)
-					$('#searchAnswer').text($('#vegToSearch').val() + " exists!");
-				else
-					$('#searchAnswer').text($('#vegToSearch').val() + " does not exist!");
+				for (var x = 0; x < found.tracks.length; x++)
+				{
+					var image = new Image();
+			        if (found.tracks[x].cover_url != null) image.src = found.tracks[x].cover_url;
+			        
+			        var html = "<li><img class=\"song_album_art\" src=\""+image.src+"\" />";
+			        html += "<div class=\"song_group\" ><div class=\"song_name\" >"+found.tracks[x].name+"</div>"
+			        html += "<div class=\"song_album\" > "+found.tracks[x].album+"</div></div>";
+			        //html += "<div class=\"messageTime\" style=\"float:right;\">"+time+"</div></li><br>";
+
+			        $('#song_list').append(html);
+			    }
 			},
 		});
-	});
-
-	
-	// return seach function
-	socket.on('index of vegetable', function(found){
-		if (found)
-			$('#searchAnswer').text($('#vegToSearch').val() + " exists!");
-		else
-			$('#searchAnswer').text($('#vegToSearch').val() + " does not exist!");
-			
-	});
-	
-});
-*/
+}
