@@ -1,8 +1,9 @@
-/**
-* Obtains parameters from the hash of the URL
-* @return Object
-*/
+
+// local spotify tokens
+var access_token, refresh_token;
+
 function mainScript() {
+	// spotify stuff
 	function getHashParams() {
 		var hashParams = {};
 		var e, 
@@ -12,6 +13,7 @@ function mainScript() {
 		return hashParams;
 	};
 
+	// fancy way of inputing data to the html, must figure out what this is doing soon
 	var userProfileSource = document.getElementById('user-profile-template').innerHTML,
 		userProfileTemplate = Handlebars.compile(userProfileSource),
 		userProfilePlaceholder = document.getElementById('user-profile');
@@ -19,10 +21,13 @@ function mainScript() {
 		oauthTemplate = Handlebars.compile(oauthSource),
 		oauthPlaceholder = document.getElementById('oauth');
 	var params = getHashParams();
-	var access_token = params.access_token,
-		refresh_token = params.refresh_token,
-		error = params.error;
 
+	// assign tokens
+	access_token = params.access_token;
+	refresh_token = params.refresh_token;
+	var	error = params.error;
+
+	// apply changes after attempted login
 	if (error) alert('There was an error during the authentication');
 	else {
 		if (access_token) {
@@ -49,6 +54,8 @@ function mainScript() {
 			$('#login').show();
 			$('#loggedin').hide();
 		}
+
+		// spotify-given code to generate new refresh token
 		document.getElementById('obtain-new-token').addEventListener('click', function() {
 			$.ajax({
 				url: '/refresh_token',
@@ -66,17 +73,25 @@ function mainScript() {
 	}
 };
 
-function findSong(){
+// find a song, using twitterFeedRadio API for connection
+function findSong() {
 
 	var search = $('#tbx_search').val();
 	console.log(search);
 
+	// send request
 	$.ajax({
 			type: "GET",
 			url: 'http://localhost:3000/find_song',
-			data: {srch: search},
+			data: {
+				srch: search,
+				'access_token': access_token
+			},
 			dataType: 'json',
 			success: function(found){
+
+				// on receiving songs, add them to the list
+				// WARN - this will have to be changed when the ordering is introduced
 				for (var x = 0; x < found.tracks.length; x++)
 				{
 					var image = new Image();
@@ -90,5 +105,18 @@ function findSong(){
 			        $('#song_list').append(html);
 			    }
 			},
+		});
+}
+
+// pause current spotify playback
+// WARN - this will not be used with the final code, just for testing!
+function pauseSong() {
+	$.ajax({
+			type: "GET",
+			url: 'http://localhost:3000/pause_song',
+			data: {
+				'access_token': access_token
+			},
+			dataType: 'json'
 		});
 }
