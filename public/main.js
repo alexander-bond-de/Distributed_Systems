@@ -1,6 +1,8 @@
 
 // local spotify tokens
 var access_token, refresh_token;
+setInterval(tickClock, 1000);
+var currentTime = 0;
 
 function mainScript() {
 	// spotify stuff
@@ -26,6 +28,7 @@ function mainScript() {
 	access_token = params.access_token;
 	refresh_token = params.refresh_token;
 	var	error = params.error;
+	currentTime = params.currentTimer;
 
 	// apply changes after attempted login
 	if (error) alert('There was an error during the authentication');
@@ -64,6 +67,7 @@ function mainScript() {
 				}
 			}).done(function(data) {
 				access_token = data.access_token;
+				currentTime = data.currentTimer;
 				oauthPlaceholder.innerHTML = oauthTemplate({
 					access_token: access_token,
 					refresh_token: refresh_token
@@ -120,3 +124,18 @@ function pauseSong() {
 			dataType: 'json'
 		});
 }
+
+function tickClock() {
+
+	// after 1.4 min, reset clock
+	if (currentTime == 100) {
+		currentTime = 0;
+    	$("#loadFill").animate({width:'0%'});
+    }
+    else {
+    	// pass time
+		$("#loadFill").animate({width:currentTime+'%'});
+		currentTime++;
+    }
+}
+    
