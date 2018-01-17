@@ -1,5 +1,8 @@
 (function() {
 
+	//========================
+	// Variables
+
 	// mongoDB and mongoose connection
 	var mongoose = require('mongoose');
 	mongoose.Promise = global.Promise;
@@ -15,15 +18,24 @@
 		artist: String,
 		album: String,
 		image: String,
-		length: String
+		length: String,
+		votes: String
 	});
 	var songModel = mongoose.model('currentSongs', songSchema);
 
+	// connect to the database
 	var db = mongoose.connection;
 	db.on('error', console.error.bind(console, 'connection error:'));
 	db.once('open', function() {
 		console.log("Database connection established");
 	});	
+
+	// clock information
+	var universalClock = setInterval(tickClock, 1000);
+	var currentTime = 0;
+
+	//========================
+	// Functions
 
 	// Adds a song to the database
     module.exports.addSong = function(song) {
@@ -34,7 +46,8 @@
        		artist: song.artist,
        		album: song.album,
 			image: song.cover_url,
-			length: song.duration_ms
+			length: song.duration_ms,
+			votes: 1
        	})
 
        	// save the model to the database
@@ -44,5 +57,22 @@
        	});
     
     };
+
+    // runs every second to simulate time passing
+    function tickClock() {
+
+    	// after 1.4 min, reset clock
+		if (currentTime == 100) {
+			// load tweets
+			currentTime = 0;
+		}
+		else {
+			// pass time
+    		currentTime++;
+		}
+    };
+
+    module.exports.getClock = function() { return currentTime; };
+
 
 }());
