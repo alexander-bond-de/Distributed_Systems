@@ -47,13 +47,25 @@ header, footer {
 	float: right;
 }
 
-#loggedin {
-	display: none;
-}
+#loggedin { display: none; }
 
 #userDetails {
     float: right;
     display: none;
+}
+
+#userPanel {
+    background-color: #0f570f;
+    border-radius: 40px 0px 0px 40px;
+}
+
+#userPanel-content { 
+    display: none;
+    width : 400px;
+    height: 100%;
+    float: right;
+    color: white;
+    font-size: 18px;
 }
 
 #userDetails-img {

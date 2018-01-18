@@ -1,8 +1,11 @@
 
 // local spotify tokens
 var access_token, refresh_token;
+
+// local variables
 setInterval(tickClock, 1000);
 var currentTime = 0;
+var displayMenu = false;
 
 function mainScript() {
 	// spotify stuff
@@ -134,6 +137,19 @@ function pauseSong() {
 			},
 			dataType: 'json'
 		});
+}
+
+function toggleMenu() {
+	displayMenu = !displayMenu;
+      if (displayMenu) {
+        $("#userPanel").animate({width: "500px"});
+        $("#userPanel").promise().done(function(){
+        	$("#userPanel-content").show();
+        });
+      } else {
+      	$("#userPanel-content").hide();
+        $("#userPanel").animate({width: "80px"});
+      }
 }
 
 function tickClock() {

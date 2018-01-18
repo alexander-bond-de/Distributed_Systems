@@ -71,7 +71,14 @@
       </script>
 
        <script id="userDetails-template" type="text/x-handlebars-template">
-          <img id="userDetails-img" width="150" src="{{images.0.url}}" />
+        <div id="userPanel">
+          <img id="userDetails-img" width="150" src="{{images.0.url}}" onclick="toggleMenu()" />
+          <div id="userPanel-content">
+            <p>Logged in as 
+              <a href="{{external_urls.spotify}}">{{id}}</a>
+            </p>
+          </div>
+        </div>
       </script>
 
     </div>
