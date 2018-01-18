@@ -19,6 +19,9 @@
         <a href="/login" class="btn btn-primary">Log in with Spotify</a>
       </div>
 
+      <div id="userDetails">
+      </div>
+
     </div>
 
     <div class="container">
@@ -65,6 +68,10 @@
           <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
           <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}</dd>
         </dl>
+      </script>
+
+       <script id="userDetails-template" type="text/x-handlebars-template">
+          <img id="userDetails-img" width="150" src="{{images.0.url}}" />
       </script>
 
     </div>
