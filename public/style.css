@@ -51,6 +51,17 @@ header, footer {
 	display: none;
 }
 
+#userDetails {
+    float: right;
+    display: none;
+}
+
+#userDetails-img {
+  height: 80px;
+  width: 80px;
+  border-radius: 40px;
+}
+
 .container {
 	background-color: #006699;
 	color: white;
