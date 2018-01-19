@@ -1,8 +1,11 @@
 
 // local spotify tokens
 var access_token, refresh_token;
+
+// local variables
 setInterval(tickClock, 1000);
 var currentTime = 0;
+var displayMenu = false;
 
 function mainScript() {
 	// spotify stuff
@@ -19,9 +22,15 @@ function mainScript() {
 	var userProfileSource = document.getElementById('user-profile-template').innerHTML,
 		userProfileTemplate = Handlebars.compile(userProfileSource),
 		userProfilePlaceholder = document.getElementById('user-profile');
+
+	var userDetailsSource = document.getElementById('userDetails-template').innerHTML,
+		userDetailsTemplate = Handlebars.compile(userDetailsSource),
+		userDetailsPlaceholder = document.getElementById('userDetails'); 
+
 	var oauthSource = document.getElementById('oauth-template').innerHTML,
 		oauthTemplate = Handlebars.compile(oauthSource),
 		oauthPlaceholder = document.getElementById('oauth');
+
 	var params = getHashParams();
 
 	// assign tokens
@@ -48,14 +57,19 @@ function mainScript() {
 				},
 				success: function(response) {
 				userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+				userDetailsPlaceholder.innerHTML = userDetailsTemplate(response);
 				$('#login').hide();
 				$('#loggedin').show();
+				$('#userDetails').show();
+
+
 				}
 			});
 		} else {
 			// render initial screen
 			$('#login').show();
 			$('#loggedin').hide();
+			$('#userDetails').hide();
 		}
 
 		// spotify-given code to generate new refresh token
@@ -123,6 +137,19 @@ function pauseSong() {
 			},
 			dataType: 'json'
 		});
+}
+
+function toggleMenu() {
+	displayMenu = !displayMenu;
+      if (displayMenu) {
+        $("#userPanel").animate({width: "500px"});
+        $("#userPanel").promise().done(function(){
+        	$("#userPanel-content").show();
+        });
+      } else {
+      	$("#userPanel-content").hide();
+        $("#userPanel").animate({width: "80px"});
+      }
 }
 
 function tickClock() {
