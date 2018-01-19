@@ -32,7 +32,7 @@ header, footer {
 #loadBar {
     width: 100%;
     height: 20px;
-    background-color: #d9ba8c;
+    background-color: #564429;
 }   
 
 #loadFill {
@@ -83,7 +83,6 @@ header, footer {
 
 .song_table {
     background-color: #d3d9de;
-    margin-top: 15px;
     width: 100%;
 }
 
@@ -105,9 +104,17 @@ header, footer {
 .song_album_art { height: 60px; width: 60px; display: inline-block; vertical-align: top;}
 .song_group     { width: auto; margin-left: 15px; overflow: hidden; display: inline-block;}
 .song_name      { color: #000000; float: left; width: inherit; overflow: hidden; white-space: nowrap; word-wrap: break-word}
-.song_artist
+.song_artist,
 .song_album     { color: #424e57; width: auto; clear:both; overflow: hidden; white-space: nowrap; word-wrap: break-word}
 
+.li_live             { background-color: #006699; padding: 10px; }
+.song_album_art_live { height: 120px; width: 120px; display: inline-block; vertical-align: top;}
+.song_group_live     { width: auto; margin-left: 15px; overflow: hidden; display: inline-block; background-color: #006699;}
+.song_name_live      { float: left; width: inherit; overflow: hidden; font-size: 32px; color: white;}
+.song_artist_live,
+.song_album_live     { width: auto; clear:both; overflow: hidden; font-size: 24px; color: white;}
+
+.song_album_art_live,
 .song_album_art:hover { 
     filter: saturate(8);
 }
@@ -128,7 +135,8 @@ header, footer {
 }
 
 #tbx_search { 
-    width: 100%; 
+    width: 100%;
+    background-color: #b6c0c8; 
 }
 
 .btn_search { 

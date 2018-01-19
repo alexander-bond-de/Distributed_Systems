@@ -135,11 +135,14 @@ app.get('/callback', function(req, res) {
         });
 
         // we can also pass the token to the browser to make requests from there
+        var currentTime 
+        songManager.getClock(function(res) {currentTime = res});
+
         res.redirect('/#' +
           querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token,
-            'currentTimer': songManager.getClock()
+            'currentTimer': currentTime
           }));
       } else {
         res.redirect('/#' +
@@ -170,12 +173,15 @@ app.get('/refresh_token', function(req, res) {
   };
 
   // on request received
+  var currentTime 
+  songManager.getClock(function(res) {currentTime = res});
+
   request.post(authOptions, function(error, response, body) {
     if (!error && response.statusCode === 200) {
       var access_token = body.access_token;
       res.send({
         'access_token': access_token,
-        'currentTimer': songManager.getClock()
+        'currentTimer': currentTime
       });
     }
   });
@@ -202,7 +208,6 @@ app.get('/find_song', function(req, res) {
 
   // use the access token to access the Spotify Web API
   request.get(options, function(error, response, body) {
-    console.log(1);
 
     var songs = body.tracks.items
       .map(function(item) {
@@ -226,13 +231,13 @@ app.get('/find_song', function(req, res) {
         if (item.album.images.length > 0) {
           ret.cover_url = item.album.images[item.album.images.length - 1].url;
         }
-        console.log(2);
 
         // get songID from the song.uri
         var uri = ret.uri;
         var tokens = uri.split(":");
         var songID = tokens[2];
 
+        // get more data about a song, including song length
         // define song to be searched and include access_token
         var options = {
           url: 'https://api.spotify.com/v1/audio-features/'+songID,
@@ -244,11 +249,8 @@ app.get('/find_song', function(req, res) {
         // on responce get information out and send song to be added to database
         request.get(options, function(error, response, body) {
 
-          console.log(4);
           ret["duration_ms"] = body.duration_ms;
           console.log(ret);
-          //songManager.addSong(song);
-          
         });
          
         return ret;
@@ -256,7 +258,6 @@ app.get('/find_song', function(req, res) {
 
     // wait for server to return all queries
     setTimeout(function() {
-      console.log(5);
       res.json({
         word: search,
         tracks: songs
@@ -267,27 +268,23 @@ app.get('/find_song', function(req, res) {
   });
 });
 
-// get more data about a song, including song length
-function gotSongData(song, access_token)
-{
-  // get songID from the song.uri
-  var uri = song.uri;
-  var tokens = uri.split(":");
-  var songID = tokens[2];
+// put a chosen song into the list of upcoming songs
+app.put('/choose_song', function(req, res) {
 
-  // define song to be searched and include access_token
-  var options = {
-    url: 'https://api.spotify.com/v1/audio-features/'+songID,
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true
-  };
+});
 
-  // on responce get information out and send song to be added to database
-  request.get(options, function(error, response, body) {
-    song["duration_ms"] = body.duration_ms;
-    //songManager.addSong(song);
-  });
-}
+// return the current song lost sorted by highest voted
+app.get('/get_song_list', function(req, res) {
+
+  // get top 10 current songs
+  var currentSongList
+  songManager.getcurrentSongList(function(res) {currentSongList = res;});
+
+  // wait for server to return all queries
+  setTimeout(function() {
+      res.json(currentSongList);
+    }, 1000);
+});
 
 // use access_token to change playback settings of user
 // WARN - this will not be used with the final code, just for testing!

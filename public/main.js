@@ -75,6 +75,49 @@ function mainScript() {
 				});
 			});
 		}, false);
+
+		// load in current songs to the player
+		$.ajax({
+			type: "GET",
+			url: 'http://localhost:3000/get_song_list',
+			dataType: 'json',
+			success: function(res) {
+
+				// display current playing song
+				var image = new Image();
+		        if (res[0].image != null) image.src = res[0].image;
+		        
+		        // insert image
+		        var html = "<li class=\"li_live\"><img class=\"song_album_art_live\" src=\""+image.src+"\" />";
+
+		        // insert track info
+		        html += "<div class=\"song_group_live\" >";
+		        html += "<div class=\"song_name_live\" >"+res[0].name+"</div>";
+		        html += "<div class=\"song_artist_live\" > "+res[0].artist+"</div>";
+		        html += "<div class=\"song_album_live\">"+res[0].album+"</div></div></li><br>";
+		        // add song to list
+		        $('#song_list').append(html);
+
+
+				// fill the other songs in
+				for (var x = 1; x < res.length; x++)
+				{
+					image = new Image();
+			        if (res[x].image != null) image.src = res[x].image;
+			        
+			        // insert image
+			        var html = "<li><img class=\"song_album_art\" src=\""+image.src+"\" />";
+
+			        // insert track info
+			        html += "<div class=\"song_group\" >";
+			        html += "<div class=\"song_name\" >"+res[x].name+"</div>";
+			        html += "<div class=\"song_artist\" > "+res[x].artist+"</div>";
+			        html += "<div class=\"song_album\">"+res[x].album+"</div></div></li><br>";
+			        // add song to list
+			        $('#song_list').append(html);
+			    }
+			}
+		});
 	}
 };
 

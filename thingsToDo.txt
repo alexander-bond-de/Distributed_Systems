@@ -1,7 +1,7 @@
 > remove details from front page
-change front page to now playing
-restructure html for search bar
-searchbar have a dropdown for results
+>change front page to now playing
+> restructure html for search bar
+> searchbar have a dropdown for results
 clickable result adds it to list of upcoming songs
 upcoming songs have the rating next to them
 voting buttons to move the songs up and down

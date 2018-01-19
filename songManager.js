@@ -45,7 +45,7 @@
        		name: song.name,
        		artist: song.artist,
        		album: song.album,
-			image: song.cover_url,
+			cover_url: song.cover_url,
 			duration_ms: song.duration_ms,
 			votes: 1
        	})
@@ -56,6 +56,15 @@
 			else console.log("Pushed : "+song.name+" - "+song.artist);
        	});
     
+    };
+
+    // gets top 10 current songs to be played
+    module.exports.getcurrentSongList = function getcurrentSongList(_callback) {
+
+    	songModel.find({}).sort({'votes' : 'desc'}).limit(10).exec(function (err, result) {
+ 		 	if (err) throw err;
+			_callback(result);
+		});
     };
 
     // runs every second to simulate time passing
@@ -72,7 +81,7 @@
 		}
     };
 
-    module.exports.getClock = function() { return currentTime; };
+    module.exports.getClock = function(_callback) { _callback(currentTime); };
 
 
 }());
