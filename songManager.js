@@ -18,7 +18,7 @@
 		artist: String,
 		album: String,
 		image: String,
-		length: String,
+		duration_ms: String,
 		votes: String
 	});
 	var songModel = mongoose.model('currentSongs', songSchema);
@@ -46,7 +46,7 @@
        		artist: song.artist,
        		album: song.album,
 			image: song.cover_url,
-			length: song.duration_ms,
+			duration_ms: song.duration_ms,
 			votes: 1
        	})
 

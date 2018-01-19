@@ -6,6 +6,7 @@ var access_token, refresh_token;
 setInterval(tickClock, 1000);
 var currentTime = 0;
 var displayMenu = false;
+var currentSearchedSongs;
 
 function mainScript() {
 	// spotify stuff
@@ -19,17 +20,11 @@ function mainScript() {
 	};
 
 	// fancy way of inputing data to the html, must figure out what this is doing soon
-	var userProfileSource = document.getElementById('user-profile-template').innerHTML,
-		userProfileTemplate = Handlebars.compile(userProfileSource),
-		userProfilePlaceholder = document.getElementById('user-profile');
 
 	var userDetailsSource = document.getElementById('userDetails-template').innerHTML,
 		userDetailsTemplate = Handlebars.compile(userDetailsSource),
-		userDetailsPlaceholder = document.getElementById('userDetails'); 
+		userDetailsPlaceholder = document.getElementById('userDetails');
 
-	var oauthSource = document.getElementById('oauth-template').innerHTML,
-		oauthTemplate = Handlebars.compile(oauthSource),
-		oauthPlaceholder = document.getElementById('oauth');
 
 	var params = getHashParams();
 
@@ -44,11 +39,6 @@ function mainScript() {
 	else {
 		if (access_token) {
 
-			// render oauth info
-			oauthPlaceholder.innerHTML = oauthTemplate({
-				access_token: access_token,
-				refresh_token: refresh_token
-			});
 
 			$.ajax({
 				url: 'https://api.spotify.com/v1/me',
@@ -56,24 +46,21 @@ function mainScript() {
 					'Authorization': 'Bearer ' + access_token
 				},
 				success: function(response) {
-				userProfilePlaceholder.innerHTML = userProfileTemplate(response);
-				userDetailsPlaceholder.innerHTML = userDetailsTemplate(response);
-				$('#login').hide();
-				$('#loggedin').show();
-				$('#userDetails').show();
-
-
+					userDetailsPlaceholder.innerHTML = userDetailsTemplate(response);
+					$('#login').hide();
+					$('#searchBar').show();
+					$('#userDetails').show();
 				}
 			});
 		} else {
 			// render initial screen
 			$('#login').show();
-			$('#loggedin').hide();
+			$('#searchBar').hide();
 			$('#userDetails').hide();
 		}
 
 		// spotify-given code to generate new refresh token
-		document.getElementById('obtain-new-token').addEventListener('click', function() {
+		$('#obtain-new-token').click(function() {
 			$.ajax({
 				url: '/refresh_token',
 				data: {
@@ -95,7 +82,6 @@ function mainScript() {
 function findSong() {
 
 	var search = $('#tbx_search').val();
-	console.log(search);
 
 	// send request
 	$.ajax({
@@ -108,19 +94,48 @@ function findSong() {
 			dataType: 'json',
 			success: function(found){
 
-				// on receiving songs, add them to the list
-				// WARN - this will have to be changed when the ordering is introduced
+				// on receiving songs, add them to the search list
+
+				// empty previous search and populate new search
+				$("#search_list").empty();
+				currentSearchedSongs = found;
+
 				for (var x = 0; x < found.tracks.length; x++)
 				{
 					var image = new Image();
 			        if (found.tracks[x].cover_url != null) image.src = found.tracks[x].cover_url;
 			        
-			        var html = "<li><img class=\"song_album_art\" src=\""+image.src+"\" />";
-			        html += "<div class=\"song_group\" ><div class=\"song_name\" >"+found.tracks[x].name+"</div>"
-			        html += "<div class=\"song_album\" > "+found.tracks[x].album+"</div></div>";
-			        //html += "<div class=\"messageTime\" style=\"float:right;\">"+time+"</div></li><br>";
+			        // insert image
+			        var html = "<li><img class=\"song_album_art\" id=\"link-"+x+"\" src=\""+image.src+"\" />";
 
-			        $('#song_list').append(html);
+			        // insert track info
+			        html += "<div class=\"song_group\" >";
+			        html += "<div class=\"song_name\" >"+found.tracks[x].name+"</div>";
+			        html += "<div class=\"song_artist\" > "+found.tracks[x].artist+"</div>";
+			        html += "<div class=\"song_album\">"+found.tracks[x].album+"</div></div></li><br>";
+			        // add song to list
+			        $('#search_list').append(html);
+
+			        // apply listener to image
+					$('#link-'+x).click(function() {
+
+						// get song id 
+						var tokens = $(this).attr('id').split("-");
+  						var songID = tokens[1];
+  						console.log(songID);
+
+						// post song to be added
+						/*
+						$.ajax({
+							type: "PUT",
+							url: 'http://localhost:3000/pause_song',
+							data: {
+								'uri': currentSearchedSongs.tracks[songID];
+							},
+							dataType: 'json'
+						});
+						*/
+					});
 			    }
 			},
 		});

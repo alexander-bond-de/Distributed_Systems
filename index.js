@@ -188,7 +188,7 @@ app.get('/find_song', function(req, res) {
 
   var search = req.query.srch;
   var access_token = req.query.access_token;
-  var songs_received = 1; // can get multiple songs
+  var songs_received = 5; // can get multiple songs
 
   console.log('search for '+search+"...");
 
@@ -202,35 +202,73 @@ app.get('/find_song', function(req, res) {
 
   // use the access token to access the Spotify Web API
   request.get(options, function(error, response, body) {
-    res.json({
-      word: search,
-      tracks: body.tracks.items
-        .map(function(item) {
-          var ret = {
-            name: item.name,
-            artist: 'Unknown',
-            artist_uri: '',
-            album: item.album.name,
-            album_uri: item.album.uri,
-            cover_url: '',
-            uri: item.uri
-          }
-          if (item.artists.length > 0) {
-            ret.artist = item.artists[0].name;
-            ret.artist_uri = item.artists[0].uri;
-          }
-          if (item.album.images.length > 0) {
-            ret.cover_url = item.album.images[item.album.images.length - 1].url;
-          }
-          getSongData(ret, access_token);
-          return ret;
-        })
-    });
+    console.log(1);
+
+    var songs = body.tracks.items
+      .map(function(item) {
+
+        // setup return object
+        var ret = {
+          name: item.name,
+          artist: 'Unknown',
+          artist_uri: '',
+          album: item.album.name,
+          album_uri: item.album.uri,
+          cover_url: '',
+          uri: item.uri
+        }
+
+        // remove any error values
+        if (item.artists.length > 0) {
+          ret.artist = item.artists[0].name;
+          ret.artist_uri = item.artists[0].uri;
+        }
+        if (item.album.images.length > 0) {
+          ret.cover_url = item.album.images[item.album.images.length - 1].url;
+        }
+        console.log(2);
+
+        // get songID from the song.uri
+        var uri = ret.uri;
+        var tokens = uri.split(":");
+        var songID = tokens[2];
+
+        // define song to be searched and include access_token
+        var options = {
+          url: 'https://api.spotify.com/v1/audio-features/'+songID,
+          headers: { 'Authorization': 'Bearer ' + access_token },
+          json: true
+        };
+
+        console.log(3);
+        // on responce get information out and send song to be added to database
+        request.get(options, function(error, response, body) {
+
+          console.log(4);
+          ret["duration_ms"] = body.duration_ms;
+          console.log(ret);
+          //songManager.addSong(song);
+          
+        });
+         
+        return ret;
+      });
+
+    // wait for server to return all queries
+    setTimeout(function() {
+      console.log(5);
+      res.json({
+        word: search,
+        tracks: songs
+      });
+      console.log(songs);
+    }, 1000);
+   
   });
 });
 
 // get more data about a song, including song length
-function getSongData(song, access_token)
+function gotSongData(song, access_token)
 {
   // get songID from the song.uri
   var uri = song.uri;
@@ -247,7 +285,7 @@ function getSongData(song, access_token)
   // on responce get information out and send song to be added to database
   request.get(options, function(error, response, body) {
     song["duration_ms"] = body.duration_ms;
-    songManager.addSong(song);
+    //songManager.addSong(song);
   });
 }
 
