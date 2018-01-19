@@ -17,9 +17,10 @@
 		name: String,
 		artist: String,
 		album: String,
-		image: String,
+		cover_url: String,
 		duration_ms: String,
-		votes: String
+		votes: String,
+		queue: String
 	});
 	var songModel = mongoose.model('currentSongs', songSchema);
 
@@ -34,12 +35,15 @@
 	var universalClock = setInterval(tickClock, 1000);
 	var currentTime = 0;
 
+	var currentSongsInList;
+
 	//========================
 	// Functions
 
 	// Adds a song to the database
     module.exports.addSong = function(song) {
 
+    	currentSongsInList++;
     	// create the model
        	var newSong = new songModel({
        		name: song.name,
@@ -47,7 +51,8 @@
        		album: song.album,
 			cover_url: song.cover_url,
 			duration_ms: song.duration_ms,
-			votes: 1
+			votes: 1,
+			queue: currentSongsInList
        	})
 
        	// save the model to the database
@@ -61,8 +66,10 @@
     // gets top 10 current songs to be played
     module.exports.getcurrentSongList = function getcurrentSongList(_callback) {
 
-    	songModel.find({}).sort({'votes' : 'desc'}).limit(10).exec(function (err, result) {
+    	songModel.find({}).sort({'votes' : 'desc', 'queue' : 'asc'}).limit(10).exec(function (err, result) {
  		 	if (err) throw err;
+ 		 	currentSongsInList = result.length;
+ 		 	console.log("currentSongsInList :"+currentSongsInList);
 			_callback(result);
 		});
     };

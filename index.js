@@ -245,12 +245,9 @@ app.get('/find_song', function(req, res) {
           json: true
         };
 
-        console.log(3);
         // on responce get information out and send song to be added to database
         request.get(options, function(error, response, body) {
-
           ret["duration_ms"] = body.duration_ms;
-          console.log(ret);
         });
          
         return ret;
@@ -262,7 +259,6 @@ app.get('/find_song', function(req, res) {
         word: search,
         tracks: songs
       });
-      console.log(songs);
     }, 1000);
    
   });
@@ -270,7 +266,7 @@ app.get('/find_song', function(req, res) {
 
 // put a chosen song into the list of upcoming songs
 app.put('/choose_song', function(req, res) {
-
+  songManager.addSong(req.body.song);
 });
 
 // return the current song lost sorted by highest voted
