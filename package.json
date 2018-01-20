@@ -7,7 +7,7 @@
     "express": "^4.16.2",
     "helmet": "^3.9.0",
     "mongodb": "^2.2.33",
-    "mongoose": "^4.13.5",
+    "mongoose": "^5.0.1",
     "node.ajax": "^2.4.3",
     "querystring": "^0.2.0",
     "request": "^2.83.0",

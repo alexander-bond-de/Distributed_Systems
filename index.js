@@ -46,6 +46,12 @@ app.use(requireHTTPS);
 // define router, although not used yet 
 var router = express.Router();
 
+// load important info into songManager
+songManager.load();
+// begin playing next song
+songManager.playNextSong();
+
+
 //============================================
 // --= SPOTIFY API SETUP =--
 
@@ -245,7 +251,7 @@ app.get('/find_song', function(req, res) {
           json: true
         };
 
-        // on responce get information out and send song to be added to database
+        // on responce get information out and add to the song object
         request.get(options, function(error, response, body) {
           ret["duration_ms"] = body.duration_ms;
         });
@@ -265,7 +271,7 @@ app.get('/find_song', function(req, res) {
 });
 
 // put a chosen song into the list of upcoming songs
-app.put('/choose_song', function(req, res) {
+app.post('/choose_song', function(req, res) {
   songManager.addSong(req.body.song);
 });
 
@@ -282,22 +288,59 @@ app.get('/get_song_list', function(req, res) {
     }, 1000);
 });
 
-// use access_token to change playback settings of user
-// WARN - this will not be used with the final code, just for testing!
-app.get('/pause_song', function(req, res) {
+// set a user's spotify instance to the current song, and return details.
+app.get('/update_live_song', function(req, res) {
 
-  var search = req.query.srch;
-  console.log("attempting pause...");
-  var access_token = req.query.access_token;
+  // get the current song information
+  console.log(req.query.access_token"+ requested song refresh"); 
+  songManager.getCurrentSong(function(song, length, time) {
 
-  var options = {
-          url: "https://api.spotify.com/v1/me/player/pause",
-          headers: { 'Authorization': 'Bearer ' + access_token }
-        };
+    if (song != null) {
+      setTimeout(function() {  
+        var access_token = req.query.access_token;
+        var uri = [song];
 
-  // use the access token to access the Spotify Web API
-  request.put(options, function(error, response, body) {
-      console.log(response.body);
+        // set the URL for setting playback of a song on a user's instance
+        var optionsPlay = {
+                url: "https://api.spotify.com/v1/me/player/play",
+                json: true,
+                headers: { 
+                  'Authorization': 'Bearer ' + access_token 
+                },
+                body: { 'uris' : uri }
+              };
+
+        // use the access token to access the Spotify Web API
+        request.put(optionsPlay, function(error, response, body) {
+            
+            // set the time of the playback
+            var optionsSeek = {
+              url: "https://api.spotify.com/v1/me/player/seek?position_ms="+time,
+              json: true,
+              headers: { 
+                'Authorization': 'Bearer ' + access_token 
+              },
+            };
+
+            // send request to change playback time
+            request.put(optionsSeek, function(error, response, body) {
+              //console.log();
+            });
+
+            // return song data for client
+            res.send({
+              'songPlaying': true,
+              'songLength': length,
+              'currentTimer': time
+            });
+        });
+      }, 500);
+    }
+    else {
+      // no song is live right now
+      res.send({ 'songPlaying': false });
+    }
+
   });
 });
 

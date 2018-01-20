@@ -4,7 +4,9 @@ var access_token, refresh_token;
 
 // local variables
 setInterval(tickClock, 1000);
-var currentTime = 0;
+var clockRunning = false;
+var currentSongLength;
+var currentTimer = 0;
 var displayMenu = false;
 var currentSearchedSongs;
 
@@ -32,6 +34,8 @@ function mainScript() {
 	access_token = params.access_token;
 	refresh_token = params.refresh_token;
 	var	error = params.error;
+
+
 	currentTime = params.currentTimer;
 
 	// apply changes after attempted login
@@ -68,7 +72,7 @@ function mainScript() {
 				}
 			}).done(function(data) {
 				access_token = data.access_token;
-				currentTime = data.currentTimer;
+				currentTimer = data.currentTimer;
 				oauthPlaceholder.innerHTML = oauthTemplate({
 					access_token: access_token,
 					refresh_token: refresh_token
@@ -76,7 +80,11 @@ function mainScript() {
 			});
 		}, false);
 
-		refreshSongList();
+		updateLiveSong();
+
+		setTimeout(function() {
+	    	refreshSongList();
+	    }, 1000);
 	}
 };
 
@@ -92,39 +100,43 @@ function refreshSongList(){
 			// empty previous list
 			$("#song_list").empty();
 
-			// display current playing song
-			var image = new Image();
-	        if (res[0].cover_url != null) image.src = res[0].cover_url;
-	        
-	        // insert image
-	        var html = "<li class=\"li_live\"><img class=\"song_album_art_live\" src=\""+image.src+"\" />";
+			// if there are songs to display
+			if (res.length > 0) {
 
-	        // insert track info
-	        html += "<div class=\"song_group_live\" >";
-	        html += "<div class=\"song_name_live\" >"+res[0].name+"</div>";
-	        html += "<div class=\"song_artist_live\" > "+res[0].artist+"</div>";
-	        html += "<div class=\"song_album_live\">"+res[0].album+"</div></div></li><br>";
-	        // add song to list
-	        $('#song_list').append(html);
-
-
-			// fill the other songs in
-			for (var x = 1; x < res.length; x++)
-			{
-				image = new Image();
-		        if (res[x].cover_url != null) image.src = res[x].cover_url;
+				// display current playing song
+				var image = new Image();
+		        if (res[0].cover_url != null) image.src = res[0].cover_url;
 		        
 		        // insert image
-		        var html = "<li><img class=\"song_album_art\" src=\""+image.src+"\" />";
+		        var html = "<li class=\"li_live\"><img class=\"song_album_art_live\" src=\""+image.src+"\" />";
 
 		        // insert track info
-		        html += "<div class=\"song_group\" >";
-		        html += "<div class=\"song_name\" >"+res[x].name+"</div>";
-		        html += "<div class=\"song_artist\" > "+res[x].artist+"</div>";
-		        html += "<div class=\"song_album\">"+res[x].album+"</div></div></li><br>";
+		        html += "<div class=\"song_group_live\" >";
+		        html += "<div class=\"song_name_live\" >"+res[0].name+"</div>";
+		        html += "<div class=\"song_artist_live\" > "+res[0].artist+"</div>";
+		        html += "<div class=\"song_album_live\">"+res[0].album+"</div></div></li><br>";
 		        // add song to list
 		        $('#song_list').append(html);
-		    }
+
+
+				// fill the other songs in
+				for (var x = 1; x < res.length; x++)
+				{
+					image = new Image();
+			        if (res[x].cover_url != null) image.src = res[x].cover_url;
+			        
+			        // insert image
+			        var html = "<li><img class=\"song_album_art\" src=\""+image.src+"\" />";
+
+			        // insert track info
+			        html += "<div class=\"song_group\" >";
+			        html += "<div class=\"song_name\" >"+res[x].name+"</div>";
+			        html += "<div class=\"song_artist\" > "+res[x].artist+"</div>";
+			        html += "<div class=\"song_album\">"+res[x].album+"</div></div></li><br>";
+			        // add song to list
+			        $('#song_list').append(html);
+			    }
+			}
 		}
 	});
 }
@@ -173,13 +185,10 @@ function findSong() {
 						// get song id 
 						var tokens = $(this).attr('id').split("-");
   						var songID = tokens[1];
-  						console.log(songID);
-  						console.log(currentSearchedSongs.tracks[songID])
 
 						// post song to be added
-						
 						$.ajax({
-							type: "PUT",
+							type: "POST",
 							url: 'http://localhost:3000/choose_song',
 							data: {
 								'song': currentSearchedSongs.tracks[songID]
@@ -188,7 +197,8 @@ function findSong() {
 						});
 
 						setTimeout(function() {
-					      refreshSongList();
+					    	refreshSongList();
+					    	updateLiveSong();
 					    }, 1000);
 						
 					});
@@ -197,19 +207,37 @@ function findSong() {
 		});
 }
 
-// pause current spotify playback
-// WARN - this will not be used with the final code, just for testing!
-function pauseSong() {
+// get information about the current live song 
+function updateLiveSong() {
 	$.ajax({
 			type: "GET",
-			url: 'http://localhost:3000/pause_song',
+			url: 'http://localhost:3000/update_live_song',
 			data: {
 				'access_token': access_token
 			},
-			dataType: 'json'
+			dataType: 'json',
+			success: function(responce){
+				if (responce.songPlaying == true) {
+
+					// update clock data
+					currentSongLength = responce.songLength;
+					currentTimer = responce.currentTimer;
+
+					// run the clock
+					clockRunning = true;
+				}
+				else {
+
+					// stop the clock
+					currentSongLength = 0;
+					currentTimer = 0;
+					clockRunning = false;
+				}
+			}
 		});
 }
 
+// animate the menu
 function toggleMenu() {
 	displayMenu = !displayMenu;
       if (displayMenu) {
@@ -223,17 +251,24 @@ function toggleMenu() {
       }
 }
 
+//count the clock along the slider
 function tickClock() {
 
-	// after 1.4 min, reset clock
-	if (currentTime == 100) {
-		currentTime = 0;
-    	$("#loadFill").animate({width:'0%'});
-    }
-    else {
-    	// pass time
-		$("#loadFill").animate({width:currentTime+'%'});
-		currentTime++;
-    }
+	// if the clock is running
+	if (clockRunning) {
+		if (currentTimer >= currentSongLength) {
+
+			// after song finishes, reset clock
+			currentTimer = 0;
+	    	$("#loadFill").animate({width:'0%'});
+	    	refreshSongList();
+			updateLiveSong();
+	    }
+	    else {
+	    	// pass time
+			$("#loadFill").animate({width:(currentTimer/currentSongLength*100)+'%'});
+			currentTimer += 1000;
+	    }
+	}
 }
     

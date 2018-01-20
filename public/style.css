@@ -114,7 +114,6 @@ header, footer {
 .song_artist_live,
 .song_album_live     { width: auto; clear:both; overflow: hidden; font-size: 24px; color: white;}
 
-.song_album_art_live,
 .song_album_art:hover { 
     filter: saturate(8);
 }
