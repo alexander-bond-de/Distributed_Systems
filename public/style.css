@@ -1,5 +1,9 @@
 body {
-    background-color: #21272c;
+    background-image: url("images/background.jpg");
+    background-size: 150%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 header, footer {
@@ -13,6 +17,7 @@ header, footer {
 
 .topMenuBar {
 	background-color: #009900;
+    opacity: 0.8;
 	height: 80px;
 	margin-bottom: 20px;
 }
@@ -29,10 +34,18 @@ header, footer {
 	float: left;
 }
 
+#logo {
+    height: 80px;
+    width: 80px;
+    border-radius: 40px;
+    float: left;
+}
+
 #loadBar {
     width: 100%;
     height: 20px;
-    background-color: #d9ba8c;
+    background-color: #564429;
+    overflow: hidden;
 }   
 
 #loadFill {
@@ -41,13 +54,20 @@ header, footer {
     height: 20px;
 }
 
+#loadProgress {
+    background-color: #e67300;
+    border-radius: 4px 0px 0px 4px;
+    color: white;
+    width: auto;
+    height: 100%;
+    float: right;
+}
+
 #login {
 	padding: 23px;
 	display: none;
 	float: right;
 }
-
-#loggedin { display: none; }
 
 #userDetails {
     float: right;
@@ -74,7 +94,8 @@ header, footer {
   border-radius: 40px;
 }
 
-.container {
+.screenLeft {
+    opacity: 0.8;
 	background-color: #006699;
 	color: white;
     margin-right: 15px;
@@ -83,38 +104,105 @@ header, footer {
     width: 76%;
 }
 
-.twitterFeed {
-	background-color: #d3d9de;
-	margin-right: 15px;
-    float: right;
-    width: 20%;
-    height: 100%;
-}
-
 .song_table {
     background-color: #d3d9de;
-    margin-top: 15px;
-    margin-left: 15px;
-    float: left;
-    width: 76%;
+    width: 100%;
 }
 
+#search_list,
 #song_list { 
     list-style-type: none; 
     margin: 0; 
     padding: 0; 
 }
 
+#search_list li,
 #song_list li {
-    padding: 40px; 
+    padding-top: 5px;
+    padding-left: 5px;
+    white-space: nowrap;
+    height: auto;
+    overflow: hidden;
 }
 
-.song_album_art { height: 60px; width: 60px; float: left;}
-.song_group		{ width: auto; float: left; margin-left: 15px;}
-.song_name		{ color: #000000; float: left; width: inherit;}
-.song_album 	{ color: #424e57; width: auto; clear:both;}
+.song_album_art { height: 60px; width: 60px; display: inline-block; vertical-align: top;}
+.song_group     { width: auto; margin-left: 15px; overflow: hidden; display: inline-block;}
+.song_name      { color: #000000; float: left; width: inherit; overflow: hidden; white-space: nowrap; word-wrap: break-word}
+.song_artist,
+.song_album     { color: #424e57; width: auto; clear:both; overflow: hidden; white-space: nowrap; word-wrap: break-word}
 
-      
+.song_voteBox   { width: 40px; height: 100%; float: right; font-weight: 900;}
+.song_voteUp    { width: 100%; background-color: #595959; }
+.song_voteDwn   { width: 100%; background-color: #595959; float: left;}
+.song_voteNum   { 
+    width: auto; 
+    min-height: 100%; 
+    float: right; 
+    font-weight: 900; 
+    color: #e67300; 
+    vertical-align: middle;
+    padding-top: 20px;
+    padding-right: 5px;
+    }
+
+.li_live             { background-color: #006699; padding: 10px; }
+.song_album_art_live { height: 120px; width: 120px; display: inline-block; vertical-align: top;}
+.song_group_live     { width: auto; margin-left: 15px; overflow: hidden; display: inline-block; background-color: #006699;}
+.song_name_live      { float: left; width: inherit; overflow: hidden; font-size: 32px; color: white;}
+.song_artist_live,
+.song_album_live     { width: auto; clear:both; overflow: hidden; font-size: 24px; color: white;}
+
+.song_album_art:hover { 
+    filter: saturate(8);
+}
+.song_voteUp:hover { 
+    background-color: #008000;
+}
+.song_voteDwn:hover { 
+    background-color: #b32400;
+}
+
+
+.screenRight {
+    margin-right: 15px;
+    float: right;
+    width: 20%;
+    height: 100%;
+}
+
+#searchBar { 
+    display: none; 
+    background-color: #d3d9de;
+    width: 100%;
+    height: 100%;
+    margin-bottom: 15px;
+}
+
+#tbx_search { 
+    width: 100%;
+    background-color: #b6c0c8; 
+}
+
+.btn_search { 
+    width: 100%; 
+    background-color: #ff9900;
+    border-color: #cc7a00;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.btn_search:hover {
+    background-color: #cc7a00;
+}
+
+.twitterFeed {
+	background-color: #d3d9de;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
 .text-overflow {
     overflow: hidden;
     text-overflow: ellipsis;

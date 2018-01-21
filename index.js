@@ -46,6 +46,13 @@ app.use(requireHTTPS);
 // define router, although not used yet 
 var router = express.Router();
 
+// load important info into songManager
+songManager.load();
+
+// begin playing next song
+songManager.playNextSong();
+
+
 //============================================
 // --= SPOTIFY API SETUP =--
 
@@ -135,11 +142,14 @@ app.get('/callback', function(req, res) {
         });
 
         // we can also pass the token to the browser to make requests from there
+        var currentTime 
+        songManager.getClock(function(res) {currentTime = res});
+
         res.redirect('/#' +
           querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token,
-            'currentTimer': songManager.getClock()
+            'currentTimer': currentTime
           }));
       } else {
         res.redirect('/#' +
@@ -170,25 +180,31 @@ app.get('/refresh_token', function(req, res) {
   };
 
   // on request received
+  var currentTime 
+  songManager.getClock(function(res) {currentTime = res});
+
   request.post(authOptions, function(error, response, body) {
     if (!error && response.statusCode === 200) {
       var access_token = body.access_token;
       res.send({
         'access_token': access_token,
-        'currentTimer': songManager.getClock()
+        'currentTimer': currentTime
       });
     }
   });
 });
 
 
+//============================================
+// --= SPOTIFYRADIO API SETUP =--
+
+
 // search for song on spotify with a keyword
-// WARN - this will not be used with the final code, just for testing!
 app.get('/find_song', function(req, res) {
 
   var search = req.query.srch;
   var access_token = req.query.access_token;
-  var songs_received = 1; // can get multiple songs
+  var songs_received = 5; // can get multiple songs
 
   console.log('search for '+search+"...");
 
@@ -202,101 +218,142 @@ app.get('/find_song', function(req, res) {
 
   // use the access token to access the Spotify Web API
   request.get(options, function(error, response, body) {
-    res.json({
-      word: search,
-      tracks: body.tracks.items
-        .map(function(item) {
-          var ret = {
-            name: item.name,
-            artist: 'Unknown',
-            artist_uri: '',
-            album: item.album.name,
-            album_uri: item.album.uri,
-            cover_url: '',
-            uri: item.uri
-          }
-          if (item.artists.length > 0) {
-            ret.artist = item.artists[0].name;
-            ret.artist_uri = item.artists[0].uri;
-          }
-          if (item.album.images.length > 0) {
-            ret.cover_url = item.album.images[item.album.images.length - 1].url;
-          }
-          getSongData(ret, access_token);
-          return ret;
-        })
-    });
-  });
-});
 
-// get more data about a song, including song length
-function getSongData(song, access_token)
-{
-  // get songID from the song.uri
-  var uri = song.uri;
-  var tokens = uri.split(":");
-  var songID = tokens[2];
+    var songs = body.tracks.items
+      .map(function(item) {
 
-  // define song to be searched and include access_token
-  var options = {
-    url: 'https://api.spotify.com/v1/audio-features/'+songID,
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true
-  };
+        // setup return object
+        var ret = {
+          name: item.name,
+          artist: 'Unknown',
+          artist_uri: '',
+          album: item.album.name,
+          album_uri: item.album.uri,
+          cover_url: '',
+          uri: item.uri
+        }
 
-  // on responce get information out and send song to be added to database
-  request.get(options, function(error, response, body) {
-    song["duration_ms"] = body.duration_ms;
-    songManager.addSong(song);
-  });
-}
+        // remove any error values
+        if (item.artists.length > 0) {
+          ret.artist = item.artists[0].name;
+          ret.artist_uri = item.artists[0].uri;
+        }
+        if (item.album.images.length > 0) {
+          ret.cover_url = item.album.images[item.album.images.length - 1].url;
+        }
 
-// use access_token to change playback settings of user
-// WARN - this will not be used with the final code, just for testing!
-app.get('/pause_song', function(req, res) {
+        // get songID from the song.uri
+        var uri = ret.uri;
+        var tokens = uri.split(":");
+        var songID = tokens[2];
 
-  var search = req.query.srch;
-  console.log("attempting pause...");
-  var access_token = req.query.access_token;
-
-  var options = {
-          url: "https://api.spotify.com/v1/me/player/pause",
-          headers: { 'Authorization': 'Bearer ' + access_token }
+        // get more data about a song, including song length
+        // define song to be searched and include access_token
+        var options = {
+          url: 'https://api.spotify.com/v1/audio-features/'+songID,
+          headers: { 'Authorization': 'Bearer ' + access_token },
+          json: true
         };
 
-  // use the access token to access the Spotify Web API
-  request.put(options, function(error, response, body) {
-      console.log(response.body);
+        // on responce get information out and add to the song object
+        request.get(options, function(error, response, body) {
+          ret["duration_ms"] = body.duration_ms;
+        });
+         
+        return ret;
+      });
+
+    // wait for server to return all queries
+    setTimeout(function() {
+      res.json({
+        word: search,
+        tracks: songs
+      });
+    }, 1000);
+   
   });
 });
 
-//============================================
-// --= REST API SETUP =--
-
-// base api route
-app.get('/', function(req, res) {					
-	res.json({message:"Rest API Connected"});
-}); 
-
-// GET call
-app.get('/test', function(req,res){
-	res.json({mesage:"GET call"});
+// put a chosen song into the list of upcoming songs
+app.post('/choose_song', function(req, res) {
+  songManager.addSong(req.body.song);
 });
 
-// POST call
-app.post('/test', function(req,res){
-	res.json({mesage:"POST call"});
+// return the current song lost sorted by highest voted
+app.get('/get_song_list', function(req, res) {
+
+  // get top 10 current songs
+  var currentSongList
+  songManager.getcurrentSongList(function(res) {currentSongList = res;});
+
+  // wait for server to return all queries
+  setTimeout(function() {
+      res.json(currentSongList);
+    }, 1000);
 });
 
-// PUT call
-app.put('/test', function(req,res){
-	res.json({mesage:"PUT call"});
+// set a user's spotify instance to the current song, and return details.
+app.get('/update_live_song', function(req, res) {
+
+  // get the current song information
+  console.log("User requested song refresh"); 
+  songManager.getCurrentSong(function(song, length, time) {
+
+    if (song != null) {
+      setTimeout(function() {  
+        var access_token = req.query.access_token;
+        var uri = [song];
+
+        // set the URL for setting playback of a song on a user's instance
+        var optionsPlay = {
+                url: "https://api.spotify.com/v1/me/player/play",
+                json: true,
+                headers: { 
+                  'Authorization': 'Bearer ' + access_token 
+                },
+                body: { 'uris' : uri }
+              };
+
+        // use the access token to access the Spotify Web API
+        request.put(optionsPlay, function(error, response, body) {
+            
+            // set the time of the playback
+            var optionsSeek = {
+              url: "https://api.spotify.com/v1/me/player/seek?position_ms="+time,
+              json: true,
+              headers: { 
+                'Authorization': 'Bearer ' + access_token 
+              },
+            };
+
+            // send request to change playback time
+            request.put(optionsSeek, function(error, response, body) {
+              //console.log();
+            });
+
+            // return song data for client
+            res.send({
+              'songPlaying': true,
+              'songLength': length,
+              'currentTimer': time
+            });
+        });
+      }, 500);
+    }
+    else {
+      // no song is live right now
+      res.send({ 'songPlaying': false });
+    }
+
+  });
 });
 
-// DELETE call
-app.delete('/test', function(req,res){
-	res.json({mesage:"DELETE call"});
+// apply a vote onto a song
+app.post('/vote_for_song', function(req, res) {
+  console.log("User voting");
+  songManager.voteForSong(req.body.song, req.body.vote);
 });
+
 
 
 // begin listening with the server
