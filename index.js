@@ -66,14 +66,9 @@ var generateRandomString = function(length) {
   return text;
 };
 
-// base api route
-app.get('/', function(req, res) {          
-  console.log("API routing...");
-}); 
-
 
 // create neccessary states and attempt login into spotify api
-app.get('/login', function(req, res) {
+router.get('/login', function(req, res) {
   console.log("requested login...");
 
   var state = generateRandomString(16);
@@ -199,8 +194,14 @@ app.get('/refresh_token', function(req, res) {
 // --= SPOTIFYRADIO API SETUP =--
 
 
+// base api route
+router.get('/', function(req, res) {          
+  console.log("API routing...");
+  res.json({"responce":"API Connected"});
+}); 
+
 // search for song on spotify with a keyword
-app.get('/find_song', function(req, res) {
+router.get('/find_song', function(req, res) {
 
   var search = req.query.srch;
   var access_token = req.query.access_token;
@@ -275,12 +276,12 @@ app.get('/find_song', function(req, res) {
 });
 
 // put a chosen song into the list of upcoming songs
-app.post('/choose_song', function(req, res) {
+router.post('/choose_song', function(req, res) {
   songManager.addSong(req.body.song);
 });
 
 // return the current song lost sorted by highest voted
-app.get('/get_song_list', function(req, res) {
+router.get('/get_song_list', function(req, res) {
 
   // get top 10 current songs
   var currentSongList
@@ -293,7 +294,7 @@ app.get('/get_song_list', function(req, res) {
 });
 
 // set a user's spotify instance to the current song, and return details.
-app.get('/update_live_song', function(req, res) {
+router.get('/update_live_song', function(req, res) {
 
   // get the current song information
   console.log("User requested song refresh"); 
@@ -349,11 +350,10 @@ app.get('/update_live_song', function(req, res) {
 });
 
 // apply a vote onto a song
-app.post('/vote_for_song', function(req, res) {
+router.post('/vote_for_song', function(req, res) {
   console.log("User voting");
   songManager.voteForSong(req.body.song, req.body.vote);
 });
-
 
 
 // begin listening with the server

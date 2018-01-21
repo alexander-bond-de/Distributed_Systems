@@ -91,7 +91,7 @@ function refreshSongList(){
 	// load in current songs to the player
 	$.ajax({
 		type: "GET",
-		url: 'http://localhost:3000/get_song_list',
+		url: 'http://localhost:3000/api/get_song_list',
 		dataType: 'json',
 		success: function(res) {
 			currentDisplayedSongs = res;
@@ -153,7 +153,7 @@ function refreshSongList(){
 						// post song vote
 						$.ajax({
 							type: "POST",
-							url: 'http://localhost:3000/vote_for_song',
+							url: 'http://localhost:3000/api/vote_for_song',
 							data: {
 								'song': currentDisplayedSongs[songID].uri,
 								'vote': 'up'
@@ -172,7 +172,7 @@ function refreshSongList(){
 						// post song vote
 						$.ajax({
 							type: "POST",
-							url: 'http://localhost:3000/vote_for_song',
+							url: 'http://localhost:3000/api/vote_for_song',
 							data: {
 								'song': currentDisplayedSongs[songID].uri,
 								'vote': 'dwn'
@@ -194,7 +194,7 @@ function findSong() {
 	// send request
 	$.ajax({
 			type: "GET",
-			url: 'http://localhost:3000/find_song',
+			url: 'http://localhost:3000/api/find_song',
 			data: {
 				srch: search,
 				'access_token': access_token
@@ -235,7 +235,7 @@ function findSong() {
 						// post song to be added
 						$.ajax({
 							type: "POST",
-							url: 'http://localhost:3000/choose_song',
+							url: 'http://localhost:3000/api/choose_song',
 							data: {
 								'song': currentSearchedSongs.tracks[songID]
 							},
@@ -256,7 +256,7 @@ function findSong() {
 function updateLiveSong() {
 	$.ajax({
 			type: "GET",
-			url: 'http://localhost:3000/update_live_song',
+			url: 'http://localhost:3000/api/update_live_song',
 			data: {
 				'access_token': access_token
 			},
