@@ -48,6 +48,7 @@ var router = express.Router();
 
 // load important info into songManager
 songManager.load();
+
 // begin playing next song
 songManager.playNextSong();
 
@@ -194,8 +195,11 @@ app.get('/refresh_token', function(req, res) {
 });
 
 
+//============================================
+// --= SPOTIFYRADIO API SETUP =--
+
+
 // search for song on spotify with a keyword
-// WARN - this will not be used with the final code, just for testing!
 app.get('/find_song', function(req, res) {
 
   var search = req.query.srch;
@@ -292,7 +296,7 @@ app.get('/get_song_list', function(req, res) {
 app.get('/update_live_song', function(req, res) {
 
   // get the current song information
-  console.log(req.query.access_token"+ requested song refresh"); 
+  console.log("User requested song refresh"); 
   songManager.getCurrentSong(function(song, length, time) {
 
     if (song != null) {
@@ -344,33 +348,12 @@ app.get('/update_live_song', function(req, res) {
   });
 });
 
-//============================================
-// --= REST API SETUP =--
-
-// base api route
-app.get('/', function(req, res) {					
-	res.json({message:"Rest API Connected"});
-}); 
-
-// GET call
-app.get('/test', function(req,res){
-	res.json({mesage:"GET call"});
+// apply a vote onto a song
+app.post('/vote_for_song', function(req, res) {
+  console.log("User voting");
+  songManager.voteForSong(req.body.song, req.body.vote);
 });
 
-// POST call
-app.post('/test', function(req,res){
-	res.json({mesage:"POST call"});
-});
-
-// PUT call
-app.put('/test', function(req,res){
-	res.json({mesage:"PUT call"});
-});
-
-// DELETE call
-app.delete('/test', function(req,res){
-	res.json({mesage:"DELETE call"});
-});
 
 
 // begin listening with the server

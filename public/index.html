@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>TwitterFeedRadio</title>
+    <link rel="icon" href="images/logo.jpg">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
 
@@ -13,7 +14,8 @@
   <body onload="mainScript()">
     <div class="topMenuBar">
 
-      <p id="title">TwitterFeedRadio</p>
+      <img id="logo" src="images/logoFill.jpg" /> 
+      <p id="title">SpotifyRadio</p>
 
       <div id="login">
         <a href="/login" class="btn btn-primary">Log in with Spotify</a>
@@ -28,6 +30,7 @@
       
       <div id="loadBar">
         <div id="loadFill">
+          <div id="loadProgress">hi</div>
         </div>
       </div>
 
@@ -61,7 +64,7 @@
           <p>Logged in as 
             <a href="{{external_urls.spotify}}">{{id}}</a>
           </p>
-          <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
+          <button class="btn btn-default" onclick="getRefreshToken()">Obtain new token using the refresh token</button>
         </div>
       </div>
     </script>

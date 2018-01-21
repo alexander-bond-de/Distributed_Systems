@@ -9,8 +9,10 @@ var currentSongLength;
 var currentTimer = 0;
 var displayMenu = false;
 var currentSearchedSongs;
+var currentDisplayedSongs;
 
 function mainScript() {
+
 	// spotify stuff
 	function getHashParams() {
 		var hashParams = {};
@@ -21,12 +23,10 @@ function mainScript() {
 		return hashParams;
 	};
 
-	// fancy way of inputing data to the html, must figure out what this is doing soon
-
+	// use the handlebars node library to fill in user data
 	var userDetailsSource = document.getElementById('userDetails-template').innerHTML,
 		userDetailsTemplate = Handlebars.compile(userDetailsSource),
 		userDetailsPlaceholder = document.getElementById('userDetails');
-
 
 	var params = getHashParams();
 
@@ -35,14 +35,13 @@ function mainScript() {
 	refresh_token = params.refresh_token;
 	var	error = params.error;
 
-
+	// set current timer (almost redundant at this point)
 	currentTime = params.currentTimer;
 
 	// apply changes after attempted login
 	if (error) alert('There was an error during the authentication');
 	else {
 		if (access_token) {
-
 
 			$.ajax({
 				url: 'https://api.spotify.com/v1/me',
@@ -63,23 +62,7 @@ function mainScript() {
 			$('#userDetails').hide();
 		}
 
-		// spotify-given code to generate new refresh token
-		$('#obtain-new-token').click(function() {
-			$.ajax({
-				url: '/refresh_token',
-				data: {
-					'refresh_token': refresh_token
-				}
-			}).done(function(data) {
-				access_token = data.access_token;
-				currentTimer = data.currentTimer;
-				oauthPlaceholder.innerHTML = oauthTemplate({
-					access_token: access_token,
-					refresh_token: refresh_token
-				});
-			});
-		}, false);
-
+		// update instance data
 		updateLiveSong();
 
 		setTimeout(function() {
@@ -88,6 +71,21 @@ function mainScript() {
 	}
 };
 
+// spotify function for refresh token
+function getRefreshToken() {
+	$.ajax({
+		url: 'http://localhost:3000/refresh_token',
+		data: {
+			'refresh_token': refresh_token
+		}
+	}).done(function(data) {
+		access_token = data.access_token;
+		currentTimer = data.currentTimer;	
+		console.log(data);
+	});
+};
+
+// get current song list, and put into the song bar
 function refreshSongList(){
 
 	// load in current songs to the player
@@ -96,6 +94,7 @@ function refreshSongList(){
 		url: 'http://localhost:3000/get_song_list',
 		dataType: 'json',
 		success: function(res) {
+			currentDisplayedSongs = res;
 
 			// empty previous list
 			$("#song_list").empty();
@@ -132,9 +131,55 @@ function refreshSongList(){
 			        html += "<div class=\"song_group\" >";
 			        html += "<div class=\"song_name\" >"+res[x].name+"</div>";
 			        html += "<div class=\"song_artist\" > "+res[x].artist+"</div>";
-			        html += "<div class=\"song_album\">"+res[x].album+"</div></div></li><br>";
+			        html += "<div class=\"song_album\">"+res[x].album+"</div></div>";
+
+			        // insert voting box
+			        html +=	"<div class=\"song_voteBox\">";
+			        html += "<button class=\"song_voteUp\" id=\"up-"+x+"\"> /\\ </button>"
+			        html += "<button class=\"song_voteDwn\" id=\"dwn-"+x+"\"> \\/ </button>"
+			        html += "</div><div class=\"song_voteNum\">"+res[x].votes+"</div>"
+					html += "</li><br>";
+
 			        // add song to list
 			        $('#song_list').append(html);
+
+			        // apply listener to song_voteUp buton
+					$('#up-'+x).click(function() {
+
+						// get song id 
+						var tokens = $(this).attr('id').split("-");
+  						var songID = tokens[1];
+
+						// post song vote
+						$.ajax({
+							type: "POST",
+							url: 'http://localhost:3000/vote_for_song',
+							data: {
+								'song': currentDisplayedSongs[songID].uri,
+								'vote': 'up'
+							},
+							dataType: 'json'
+						});	
+					});
+
+					// apply listener to song_voteDwn buton
+					$('#dwn-'+x).click(function() {
+
+						// get song id 
+						var tokens = $(this).attr('id').split("-");
+  						var songID = tokens[1];
+
+						// post song vote
+						$.ajax({
+							type: "POST",
+							url: 'http://localhost:3000/vote_for_song',
+							data: {
+								'song': currentDisplayedSongs[songID].uri,
+								'vote': 'dwn'
+							},
+							dataType: 'json'
+						});
+					});
 			    }
 			}
 		}
@@ -176,6 +221,7 @@ function findSong() {
 			        html += "<div class=\"song_name\" >"+found.tracks[x].name+"</div>";
 			        html += "<div class=\"song_artist\" > "+found.tracks[x].artist+"</div>";
 			        html += "<div class=\"song_album\">"+found.tracks[x].album+"</div></div></li><br>";
+
 			        // add song to list
 			        $('#search_list').append(html);
 
@@ -200,7 +246,6 @@ function findSong() {
 					    	refreshSongList();
 					    	updateLiveSong();
 					    }, 1000);
-						
 					});
 			    }
 			},
@@ -261,14 +306,27 @@ function tickClock() {
 			// after song finishes, reset clock
 			currentTimer = 0;
 	    	$("#loadFill").animate({width:'0%'});
+	    	$("#loadProgress").text("");
 	    	refreshSongList();
 			updateLiveSong();
 	    }
 	    else {
 	    	// pass time
 			$("#loadFill").animate({width:(currentTimer/currentSongLength*100)+'%'});
+			$("#loadProgress").text(msToTime(currentTimer));
 			currentTimer += 1000;
 	    }
 	}
+}
+
+// convert milliseconds to min:seconds
+function msToTime(milliseconds) {
+    var seconds = parseInt((milliseconds/1000)%60),
+        minutes = parseInt((milliseconds/(1000*60))%60)
+
+    minutes = (minutes < 10 ? "0" + minutes : minutes);
+    seconds = (seconds < 10 ? "0" + seconds : seconds);
+
+    return minutes + ":" + seconds;
 }
     

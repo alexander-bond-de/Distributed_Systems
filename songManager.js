@@ -151,6 +151,22 @@
 		}
     };
 
+    // apply vote onto a song
+    module.exports.voteForSong = function(songID, vote) { 
+    	// get the next song
+    	songModel.find({'uri' : songID}).exec(function (err, result) {
+ 		 	if (err) throw err;
+
+ 		 	// apply vote to song
+ 		 	var votes = parseInt(result[0].votes);
+			result[0].votes = (vote == "up"?votes+1:votes-1);
+			result[0].save(function (err, update) {
+			    if (err) return handleError(err);
+			});
+
+		});	
+    };
+
     // changes which song is 'live' in the database
     function playNextSong() {
 
@@ -174,6 +190,7 @@
 		 		 	// start the clock
 		 		 	console.log("__Now Playing: "+result[0].name+" - "+result[0].artist);
 		 		 	clockRunning = true;
+		 		 	
 	 		 	} else {
 	 		 		// stop the clock
 					clockRunning = false;
@@ -185,6 +202,7 @@
     // allow server to begin by playing next song
     module.exports.playNextSong = function() { playNextSong(); };
 
+    // return current timer
     module.exports.getClock = function(_callback) { _callback(currentTime); };
 
 
